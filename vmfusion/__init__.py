@@ -259,8 +259,17 @@ class dhcpd_leases( object ):
 
     reload = load
 
+    def __len__( self ):
+        return len( self.list )
+
+    def __iter__( self ):
+        return self.list.iterkeys()
+
     def __getitem__( self, item ):
         return self.list[ item ]
+
+    def __contains__( self, item ):
+        return item in self.list
 
     def __str__( self ):
         return str( self.list )
