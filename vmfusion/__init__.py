@@ -22,11 +22,14 @@ class vmrun_cli( object ):
 
     Tested with VMware Fusion 5."""
 
-    def __init__( self, bundle_directory=None ):
-        if not bundle_directory:
-            bundle_directory = '/Applications/VMware Fusion.app'
+    def __init__( self, bundle_directory=None, vmrun_path=None ):
+        if not vmrun_path:
+            if not bundle_directory:
+                bundle_directory = '/Applications/VMware Fusion.app'
 
-        vmrun = os.path.join( bundle_directory, 'Contents/Library/vmrun' )
+            vmrun = os.path.join( bundle_directory, 'Contents/Library/vmrun' )
+        else:
+            vmrun = vmrun_path
 
         if not os.path.isfile( vmrun ):
             raise ValueError( "vmrun tool not found at path {0}".format( vmrun ) )
