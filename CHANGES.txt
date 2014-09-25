@@ -1,2 +1,3 @@
+v0.2.0, 2014-09-25 -- Add optional vmrun_path parameter to vmrun_cli.
 v0.1.1, 2013-11-17 -- Implement __len__, __contains__, __iter__ for dhcpd_leases.
 v0.1.0, 2013-11-17 -- Initial release.
