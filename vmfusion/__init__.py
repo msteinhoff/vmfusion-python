@@ -111,7 +111,16 @@ class vmrun_cli( object ):
         file_must_exist( 'VMX', vmx )
         
         self.__vmrun( [ 'delete', vmx ] )
-
+    
+    """ Doesn't work with VMware Fusion 5.
+    Needs the vmware-tools running on the virtual machine."""
+    def get_ip( self, vmx ):
+        vmx = get_abspath( vmx )
+        
+        file_must_exist( 'VMX' , vmx )
+        
+        self.__vmrun( [ 'getGuestIPAddress', vmx ] )
+        
 class vdiskmanager_cli( object ):
     # Valid disks
     SPARSE_SINGLE = 'SPARSE_SINGLE'
