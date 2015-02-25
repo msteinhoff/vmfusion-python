@@ -109,8 +109,15 @@ class vmrun_cli( object ):
         vmx = get_abspath( vmx )
 
         file_must_exist( 'VMX', vmx )
-        
+
         self.__vmrun( [ 'delete', vmx ] )
+
+    def revertToSnapshot( self, vmx, snapshot ):
+        vmx = get_abspath( vmx )
+
+        file_must_exist( 'VMX', vmx )
+
+        self.__vmrun( [ 'revertToSnapshot', vmx, snapshot ] )
 
 class vdiskmanager_cli( object ):
     # Valid disks

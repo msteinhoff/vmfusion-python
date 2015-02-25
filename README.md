@@ -107,9 +107,18 @@ Usage:
 
     vmrun.pause( vmx )
 
+### revertToSnapshot
+
+Set the virtual machine state to a snapshot.
+
+Usage:
+
+    vmrun.revertToSnapshot( vmx, snapshot_name )
+
+
 ### unpause
 
-Continue CPU execution of a M.
+Continue CPU execution of a VM.
 
 Usage:
 
