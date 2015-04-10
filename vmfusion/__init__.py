@@ -17,6 +17,10 @@ def get_abspath( path ):
 
     return path
 
+
+class VMRunException(Exception): pass
+
+
 class vmrun_cli( object ):
     """Human readable python interface to the vmrun cli tool of VMware Fusion.
 
@@ -42,6 +46,9 @@ class vmrun_cli( object ):
         
         proc = subprocess.Popen( base, stdout=subprocess.PIPE )
         stdout = proc.stdout.readlines()
+
+        if len(stdout) and stdout[0].startswith('Error'):
+            raise VMRunException(stdout[0])
 
         return stdout
 
@@ -111,6 +118,39 @@ class vmrun_cli( object ):
         file_must_exist( 'VMX', vmx )
         
         self.__vmrun( [ 'delete', vmx ] )
+
+    def list_snapshots( self, vmx ):
+        vmx = get_abspath( vmx )
+
+        file_must_exist( 'VMX', vmx )
+
+        output = self.__vmrun( [ 'listSnapshots', vmx ] )
+        snapshots = [s.strip() for s in output[1:]] 
+        data = {'count': len(snapshots), 'snapshots': snapshots}
+
+        return data
+
+    def snapshot( self, vmx, name ):
+        vmx = get_abspath( vmx )
+
+        file_must_exist( 'VMX', vmx )
+
+        self.__vmrun( [ 'snapshot', vmx, name ] )
+
+    def revert_to_snapshot( self, vmx, name ):
+        vmx = get_abspath( vmx )
+
+        file_must_exist( 'VMX', vmx )
+
+        self.__vmrun( [ 'revertToSnapshot', vmx, name ] )
+
+    def delete_snapshot( self, vmx, name ):
+        vmx = get_abspath( vmx )
+
+        file_must_exist( 'VMX', vmx )
+
+        self.__vmrun( [ 'deleteSnapshot', vmx, name ] )
+
 
 class vdiskmanager_cli( object ):
     # Valid disks

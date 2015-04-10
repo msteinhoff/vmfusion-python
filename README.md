@@ -115,6 +115,38 @@ Usage:
 
     vmrun.unpause( vmx )
 
+### list_snapshots
+
+List the snapshots in a VM.
+
+Usage:
+    
+    vmrun.list_snapshots( vmx )
+
+### snapshot
+
+Take a new snapshot of the VM.
+
+Usage:
+    
+    vmrun.snapshot( vmx, name )
+
+### revert\_to\_snapshot
+
+Revert the VM to a snapshot.
+
+Usage:
+    
+    vmrun.revert_to_snapshot( vmx, name )
+
+### delete_snapshot
+
+Delete a snapshot.
+
+Usage:
+    
+    vmrun.delete_snapshot( vmx, name )
+
 ## vdiskmanager
 
 With the `vdiskmanager` tool VMDK disks can be managed. For all methods, the `vmdk` parameter always expects a relative path to the vmdk file.
