@@ -17,6 +17,10 @@ def get_abspath( path ):
 
     return path
 
+
+class VMRunException(Exception): pass
+
+
 class vmrun_cli( object ):
     """Human readable python interface to the vmrun cli tool of VMware Fusion.
 
@@ -42,6 +46,9 @@ class vmrun_cli( object ):
         
         proc = subprocess.Popen( base, stdout=subprocess.PIPE )
         stdout = proc.stdout.readlines()
+
+        if len(stdout) and stdout[0].startswith('Error'):
+            raise VMRunException(stdout[0])
 
         return stdout
 
@@ -111,6 +118,82 @@ class vmrun_cli( object ):
         file_must_exist( 'VMX', vmx )
         
         self.__vmrun( [ 'delete', vmx ] )
+
+    def list_snapshots( self, vmx ):
+        vmx = get_abspath( vmx )
+
+        file_must_exist( 'VMX', vmx )
+
+        output = self.__vmrun( [ 'listSnapshots', vmx ] )
+        snapshots = [s.strip() for s in output[1:]] 
+        data = {'count': len(snapshots), 'snapshots': snapshots}
+
+        return data
+
+    def snapshot( self, vmx, name ):
+        vmx = get_abspath( vmx )
+
+        file_must_exist( 'VMX', vmx )
+
+        self.__vmrun( [ 'snapshot', vmx, name ] )
+
+    def revert_to_snapshot( self, vmx, name ):
+        vmx = get_abspath( vmx )
+
+        file_must_exist( 'VMX', vmx )
+
+        self.__vmrun( [ 'revertToSnapshot', vmx, name ] )
+
+    def delete_snapshot( self, vmx, name ):
+        vmx = get_abspath( vmx )
+
+        file_must_exist( 'VMX', vmx )
+
+        self.__vmrun( [ 'deleteSnapshot', vmx, name ] )
+
+
+class VM(object):
+    """
+    A virtual machine.
+    """
+    def __init__(self, vmx):
+        self.vmx = get_abspath(vmx)
+        file_must_exist('VMX', self.vmx)
+        self.vmrun = vmrun_cli()
+
+    def start(self, gui=True):
+        return self.vmrun.start(self.vmx, gui)
+
+    def stop(self, soft=True):
+        return self.vmrun.stop(self.vmx, soft)
+
+    def reset(self, soft=True):
+        return self.vmrun.reset(self.vmx, soft)
+
+    def suspend(self, soft=True):
+        return self.vmrun.suspend(self.vmx, soft)
+
+    def pause(self):
+        return self.vmrun.pause(self.vmx)
+
+    def unpause(self):
+        return self.vmrun.unpause(self.vmx)
+
+    def delete(self):
+        return self.vmrun.delete(self.vmx)
+
+    def list_snapshots(self):
+        return self.vmrun.list_snapshots(self.vmx)
+
+    def snapshot(self, name):
+        return self.vmrun.snapshot(self.vmx, name)
+
+    def revert_to_snapshot(self, name):
+        return self.vmrun.revert_to_snapshot(self.vmx, name)
+
+    def delete_snapshot(self, name):
+        return self.vmrun.delete_snapshot(self.vmx, name)
+
 
 class vdiskmanager_cli( object ):
     # Valid disks

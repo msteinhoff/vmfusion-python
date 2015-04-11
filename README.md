@@ -115,6 +115,56 @@ Usage:
 
     vmrun.unpause( vmx )
 
+### list_snapshots
+
+List the snapshots in a VM.
+
+Usage:
+    
+    vmrun.list_snapshots( vmx )
+
+### snapshot
+
+Take a new snapshot of the VM.
+
+Usage:
+    
+    vmrun.snapshot( vmx, name )
+
+### revert\_to\_snapshot
+
+Revert the VM to a snapshot.
+
+Usage:
+    
+    vmrun.revert_to_snapshot( vmx, name )
+
+### delete_snapshot
+
+Delete a snapshot.
+
+Usage:
+    
+    vmrun.delete_snapshot( vmx, name )
+
+
+## VM
+
+The VM class represents a virtual machine, and is used as a convenient wrapper
+for the `vmrun` commands to operate on a common VM. The same functions that
+`vmrun` provides that take a `vmx` parameter are exposed through this class.
+
+Usage:
+
+    vm = VM('/path/to/virtual_machine.vmx')
+    vm.start()
+    vm.suspend()
+    vm.stop()
+    vm.snapshot('some snapshot')
+    vm.revert_to_snapshot('some snapshot')
+    vm.delete_snapshot('some snapshot')
+
+
 ## vdiskmanager
 
 With the `vdiskmanager` tool VMDK disks can be managed. For all methods, the `vmdk` parameter always expects a relative path to the vmdk file.
