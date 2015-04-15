@@ -39,7 +39,7 @@ class vmrun_cli( object ):
     def __vmrun( self, command ):
         base = [ self.tool_path, '-T', 'fusion' ]
         base.extend( command )
-        
+
         proc = subprocess.Popen( base, stdout=subprocess.PIPE )
         stdout = proc.stdout.readlines()
 
@@ -55,7 +55,7 @@ class vmrun_cli( object ):
         # [optional absolute path to VMX n]
         data = {}
         data[ 'count' ] = int(output[0].split(':')[1].strip())
-        data[ 'machines' ] = [vmx.strip() for vmx in output[1:]] 
+        data[ 'machines' ] = [vmx.strip() for vmx in output[1:]]
 
         return data
 
@@ -66,7 +66,7 @@ class vmrun_cli( object ):
 
         gui_value = ( 'nogui', 'gui' )[gui]
         self.__vmrun( [ 'start', vmx, gui_value ] )
-    
+
     def stop( self, vmx, soft=True ):
         vmx = get_abspath( vmx )
 
@@ -74,30 +74,30 @@ class vmrun_cli( object ):
 
         soft_value = ( 'hard', 'soft' )[soft]
         self.__vmrun( [ 'stop', vmx, soft_value ] )
-    
+
     def reset( self, vmx, soft=True ):
         vmx = get_abspath( vmx )
 
         file_must_exist( 'VMX', vmx )
-        
+
         soft_value = ( 'hard', 'soft' )[soft]
         self.__vmrun( [ 'reset', vmx, soft_value ] )
-    
+
     def suspend( self, vmx, soft=True ):
         vmx = get_abspath( vmx )
 
         file_must_exist( 'VMX', vmx )
-        
+
         soft_value = ( 'hard', 'soft' )[soft]
         self.__vmrun( [ 'suspend', vmx, soft_value ] )
-    
+
     def pause( self, vmx ):
         vmx = get_abspath( vmx )
 
         file_must_exist( 'VMX', vmx )
 
         self.__vmrun( [ 'pause', vmx ] )
-    
+
     def unpause( self, vmx ):
         vmx = get_abspath( vmx )
 
@@ -109,7 +109,7 @@ class vmrun_cli( object ):
         vmx = get_abspath( vmx )
 
         file_must_exist( 'VMX', vmx )
-        
+
         self.__vmrun( [ 'delete', vmx ] )
 
 class vdiskmanager_cli( object ):
@@ -149,7 +149,7 @@ class vdiskmanager_cli( object ):
     def __vdiskmanager( self, command ):
         base = [ self.tool_path ]
         base.extend( command )
-        
+
         proc = subprocess.call( base )
 
     def create( self, vmdk, size, disk_type=None, adapter_type=None ):
