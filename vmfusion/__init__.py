@@ -1,5 +1,6 @@
 import os
 import subprocess
+import glob
 from datetime import datetime, timedelta
 from pyparsing import *
 
@@ -43,7 +44,7 @@ class vmrun_cli( object ):
     def __vmrun( self, command ):
         base = [ self.tool_path, '-T', 'fusion' ]
         base.extend( command )
-        
+
         proc = subprocess.Popen( base, stdout=subprocess.PIPE )
         stdout = proc.stdout.readlines()
 
@@ -62,7 +63,7 @@ class vmrun_cli( object ):
         # [optional absolute path to VMX n]
         data = {}
         data[ 'count' ] = int(output[0].split(':')[1].strip())
-        data[ 'machines' ] = [vmx.strip() for vmx in output[1:]] 
+        data[ 'machines' ] = [vmx.strip() for vmx in output[1:]]
 
         return data
 
@@ -73,7 +74,7 @@ class vmrun_cli( object ):
 
         gui_value = ( 'nogui', 'gui' )[gui]
         self.__vmrun( [ 'start', vmx, gui_value ] )
-    
+
     def stop( self, vmx, soft=True ):
         vmx = get_abspath( vmx )
 
@@ -81,30 +82,30 @@ class vmrun_cli( object ):
 
         soft_value = ( 'hard', 'soft' )[soft]
         self.__vmrun( [ 'stop', vmx, soft_value ] )
-    
+
     def reset( self, vmx, soft=True ):
         vmx = get_abspath( vmx )
 
         file_must_exist( 'VMX', vmx )
-        
+
         soft_value = ( 'hard', 'soft' )[soft]
         self.__vmrun( [ 'reset', vmx, soft_value ] )
-    
+
     def suspend( self, vmx, soft=True ):
         vmx = get_abspath( vmx )
 
         file_must_exist( 'VMX', vmx )
-        
+
         soft_value = ( 'hard', 'soft' )[soft]
         self.__vmrun( [ 'suspend', vmx, soft_value ] )
-    
+
     def pause( self, vmx ):
         vmx = get_abspath( vmx )
 
         file_must_exist( 'VMX', vmx )
 
         self.__vmrun( [ 'pause', vmx ] )
-    
+
     def unpause( self, vmx ):
         vmx = get_abspath( vmx )
 
@@ -116,7 +117,7 @@ class vmrun_cli( object ):
         vmx = get_abspath( vmx )
 
         file_must_exist( 'VMX', vmx )
-        
+
         self.__vmrun( [ 'delete', vmx ] )
 
     def list_snapshots( self, vmx ):
@@ -125,7 +126,7 @@ class vmrun_cli( object ):
         file_must_exist( 'VMX', vmx )
 
         output = self.__vmrun( [ 'listSnapshots', vmx ] )
-        snapshots = [s.strip() for s in output[1:]] 
+        snapshots = [s.strip() for s in output[1:]]
         data = {'count': len(snapshots), 'snapshots': snapshots}
 
         return data
@@ -152,6 +153,59 @@ class vmrun_cli( object ):
         self.__vmrun( [ 'deleteSnapshot', vmx, name ] )
 
 
+class Fusion(object):
+    """
+    VMware Fusion.
+
+        >>> import vmfusion
+        >>> f = vmfusion.Fusion('/Users/x/VM')
+        >>> [v.name for v in f.vms]
+        ['QNX', 'Ubuntu 64-bit', 'Windows 7 x64']
+        >>> [v.is_running for v in f.vms]
+        [False, False, False]
+        >>> f[0]
+        <vmfusion.VM object at 0x10a018910>
+        >>> f[0].name
+        'QNX'
+        >>> f['QNX']
+        <vmfusion.VM object at 0x10a018910>
+        >>> f['QNX'].name
+        'QNX'
+        >>> f[-1].start()
+        >>> [v.is_running for v in f.vms]
+        [False, False, True]
+    """
+    def __init__(self, vm_dir=None, bundle_directory=None, vmrun_path=None):
+        self.vmrun = vmrun_cli(bundle_directory, vmrun_path)
+
+        # Get the list of running VMs
+        self.vms = [VM(vmx) for vmx in self.vmrun.list()['machines']]
+
+        # Add any other VMs from the vm_dir specified
+        if vm_dir:
+            for v in glob.glob(vm_dir + '/*vmwarevm'):
+                try:
+                    vmx = glob.glob(v + '/*vmx')[0]
+                    if vmx not in [v.vmx for v in self.vms]:
+                        self.vms.append(VM(vmx))
+                except IndexError:
+                    # Something's gone wrong and there's no .vmx file in this .vmwarevm
+                    pass
+
+    def __iter__(self):
+        for vm in self.vms:
+            yield vm
+
+    def __getitem__(self, key):
+        if isinstance(key, str):
+            try:
+                return [v for v in self.vms if v.name == key][0]
+            except IndexError:
+                raise KeyError("No such VM {}".format(key))
+        else:
+            return self.vms[key]
+
+
 class VM(object):
     """
     A virtual machine.
@@ -160,6 +214,7 @@ class VM(object):
         self.vmx = get_abspath(vmx)
         file_must_exist('VMX', self.vmx)
         self.vmrun = vmrun_cli()
+        self.name = os.path.splitext(os.path.basename(self.vmx))[0]
 
     def start(self, gui=True):
         return self.vmrun.start(self.vmx, gui)
@@ -193,6 +248,10 @@ class VM(object):
 
     def delete_snapshot(self, name):
         return self.vmrun.delete_snapshot(self.vmx, name)
+
+    @property
+    def is_running(self):
+        return self.vmx in self.vmrun.list()['machines']
 
 
 class vdiskmanager_cli( object ):
@@ -232,7 +291,7 @@ class vdiskmanager_cli( object ):
     def __vdiskmanager( self, command ):
         base = [ self.tool_path ]
         base.extend( command )
-        
+
         proc = subprocess.call( base )
 
     def create( self, vmdk, size, disk_type=None, adapter_type=None ):
