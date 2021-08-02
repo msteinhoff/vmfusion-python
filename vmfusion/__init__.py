@@ -43,9 +43,9 @@ class vmrun_cli( object ):
     def __vmrun( self, command ):
         base = [ self.tool_path, '-T', 'fusion' ]
         base.extend( command )
-
+        
         proc = subprocess.Popen( base, stdout=subprocess.PIPE )
-        stdout = proc.stdout.readlines()
+        stdout = [x.decode('utf8') for x in proc.stdout.readlines()]
 
         if len(stdout) and stdout[0].startswith('Error'):
             raise VMRunException(stdout[0])
@@ -62,7 +62,7 @@ class vmrun_cli( object ):
         # [optional absolute path to VMX n]
         data = {}
         data[ 'count' ] = int(output[0].split(':')[1].strip())
-        data[ 'machines' ] = [vmx.strip() for vmx in output[1:]]
+        data[ 'machines' ] = [vmx.strip() for vmx in output[1:]] 
 
         return data
 
@@ -151,6 +151,9 @@ class vmrun_cli( object ):
 
         self.__vmrun( [ 'deleteSnapshot', vmx, name ] )
 
+    def fetch_ipaddress(self, vmx):
+        vmx = get_abspath( vmx )
+        return self.__vmrun( ['getGuestIPAddress', vmx, '-wait'] )[0].strip('\n')
 
 class VM(object):
     """
@@ -194,6 +197,8 @@ class VM(object):
     def delete_snapshot(self, name):
         return self.vmrun.delete_snapshot(self.vmx, name)
 
+    def fetch_ipaddress(self):
+        return self.vmrun.fetch_ipaddress(self.vmx)
 
 class vdiskmanager_cli( object ):
     # Valid disks
@@ -335,8 +340,8 @@ class dhcpd_leases( object ):
                 if mac not in all_leases or lease.starts.datetime > all_leases[mac].starts.datetime:
                     all_leases[ mac ] = lease
 
-            except AttributeError, e:
-                print e
+            except AttributeError as e:
+                print(e)
 
         for mac in all_leases:
             all_leases[ mac ] = all_leases[ mac ].ipaddress
